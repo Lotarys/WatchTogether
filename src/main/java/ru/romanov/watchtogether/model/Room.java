@@ -1,53 +1,47 @@
 package ru.romanov.watchtogether.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import ru.romanov.watchtogether.exception.UserNotFoundException;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Room {
-    private String id;
+
+    private String roomId;
+    private List<User> users = new ArrayList<>();
+    private List<String> videos = new LinkedList<>();
     private String hostUsername;
 
-    private List<String> users = new ArrayList<>();
-
-    private Queue<String> videoLinks;
 
     public Room() {
     }
 
-    public Room(String id, String hostUsername) {
-        this.id = id;
+    public Room(String id, User user, String hostUsername) {
+        this.roomId = id;
+        users.add(user);
         this.hostUsername = hostUsername;
-        users.add(hostUsername);
-        this.videoLinks = new LinkedList<>();
     }
 
-    public void addUser(String username) {
-        users.add(username);
+    public void addUser(User user) {
+        users.add(user);
     }
 
     public void removeUser(String username) {
-        users.remove(username);
+        boolean removed = users.removeIf(user -> user.getUsername().equals(username));
+        if (!removed) {
+            throw new UserNotFoundException("User " + username + " not found!");
+        }
     }
 
     public void addVideoLink(String videoLink) {
-        videoLinks.add(videoLink);
+        videos.add(videoLink);
     }
 
-    public String getNextVideoLink() {
-        return videoLinks.poll();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public List<User> getUsers() {
+        return users;
     }
 
     public String getHostUsername() {
@@ -58,21 +52,12 @@ public class Room {
         this.hostUsername = hostUsername;
     }
 
-    public List<String> getUsers() {
-        return users;
-    }
-
-    public Queue<String> getVideoLinks() {
-        return videoLinks;
-    }
-
     @Override
     public String toString() {
         return "Room{" +
-                "id='" + id + '\'' +
-                ", hostUsername='" + hostUsername + '\'' +
+                "id='" + roomId + '\'' +
                 ", users=" + users +
-                ", videoLinks=" + videoLinks +
+                ", videoLinks=" + videos +
                 '}';
     }
 }
