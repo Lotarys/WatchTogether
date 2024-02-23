@@ -6,7 +6,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import ru.romanov.watchtogether.model.ChatMessage;
-import ru.romanov.watchtogether.model.User;
+import ru.romanov.watchtogether.model.Room;
 import ru.romanov.watchtogether.service.RoomService;
 
 @Controller
@@ -27,9 +27,8 @@ public class VideoController {
 
     @MessageMapping("/video/{roomId}/join")
     @SendTo("/topic/{roomId}")
-    public User joinRoom(@DestinationVariable String roomId, @Payload String username) {
-        roomService.join(username, roomId);
-        return new User(username);
+    public Room joinRoom(@DestinationVariable String roomId, @Payload String username) {
+        return roomService.join(username, roomId);
     }
 
     @MessageMapping("/video/{roomId}/chat")
