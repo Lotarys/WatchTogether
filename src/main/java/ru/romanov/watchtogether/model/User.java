@@ -6,6 +6,7 @@ public class User {
     private boolean isOwner;
 
     public User(String username) {
+        setOwner(false);
         this.username = username;
     }
 
@@ -17,7 +18,19 @@ public class User {
     public User() {
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public boolean getIsOwner() {
+        return isOwner;
+    }
+
     public String getUsername() {
         return username;
+    }
+
+    public void setOwner(boolean owner) {
+        isOwner = owner;
     }
 }

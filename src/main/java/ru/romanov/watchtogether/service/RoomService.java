@@ -20,17 +20,17 @@ public class RoomService {
     }
 
     @Transactional
-    public Room createRoom(String username) {
+    public String createRoom(String username) {
         User hostUser = new User(username, true);
         String roomId = UUID.randomUUID().toString();
         Room room = new Room(roomId, hostUser, username);
         redisTemplate.opsForValue().set(roomId, room);
-        return room;
+        return roomId;
     }
 
     @Transactional
     public Room join(String username, String roomId) {
-        return addUser(roomId, username);
+        return addUser(username, roomId);
     }
 
     public Room getRoom(String roomId) {
@@ -41,7 +41,7 @@ public class RoomService {
         return room;
     }
 
-    private Room addUser(String roomId, String username) {
+    private Room addUser(String username, String roomId) {
         Room room = getRoom(roomId);
         room.getUsers().
                 stream().
