@@ -13,14 +13,12 @@ public class VideoController {
     @MessageMapping("/video/{roomId}/pause")
     @SendTo("/topic/{roomId}/pause")
     public String pause() {
-        System.out.println("pause");
         return "pause";
     }
 
     @MessageMapping("/video/{roomId}/chat")
     @SendTo("/topic/{roomId}/chat")
     public ChatMessage chat(@Payload ChatMessage chatMessage) {
-        System.out.println(chatMessage);
         return chatMessage;
     }
 

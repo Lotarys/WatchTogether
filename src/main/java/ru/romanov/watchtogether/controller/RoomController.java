@@ -24,11 +24,6 @@ public class RoomController {
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.createRoom(username));
     }
 
-
-
-
-
-
     @PostMapping("/room/join")
     public ResponseEntity<?> joinRoom(@RequestParam String username, @RequestParam String roomId) {
         Room room = roomService.join(username, roomId);
