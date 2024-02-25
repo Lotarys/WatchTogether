@@ -4,6 +4,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.romanov.watchtogether.exception.RoomNotFoundException;
+import ru.romanov.watchtogether.exception.UserNotFoundException;
 import ru.romanov.watchtogether.exception.UsernameUniqueException;
 import ru.romanov.watchtogether.model.Room;
 import ru.romanov.watchtogether.model.User;
@@ -21,15 +22,19 @@ public class RoomService {
 
     @Transactional
     public String createRoom(String username) {
-        User hostUser = new User(username, true);
-        String roomId = UUID.randomUUID().toString();
-        Room room = new Room(roomId, hostUser, username);
-        redisTemplate.opsForValue().set(roomId, room);
-        return roomId;
+        try {
+            User hostUser = new User(username, true);
+            String roomId = UUID.randomUUID().toString();
+            Room room = new Room(roomId, hostUser, username);
+            redisTemplate.opsForValue().set(roomId, room);
+            return roomId;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create room in Redis: " + e.getMessage(), e);
+        }
     }
 
     @Transactional
-    public Room join(String username, String roomId) {
+    public Room joinRoom(String username, String roomId) {
         return addUser(username, roomId);
     }
 
@@ -42,28 +47,36 @@ public class RoomService {
     }
 
     private Room addUser(String username, String roomId) {
-        Room room = getRoom(roomId);
-        room.getUsers().
-                stream().
-                forEach(e -> {
-            if(e.getUsername().equals(username)) {
+        try {
+            Room room = getRoom(roomId);
+            if (room.getUsers().stream().anyMatch(e -> e.getUsername().equals(username))) {
                 throw new UsernameUniqueException("The username is already occupied");
             }
-        });
-        room.addUser(new User(username));
-        redisTemplate.opsForValue().set(roomId, room);
-        return room;
+            room.addUser(new User(username));
+            redisTemplate.opsForValue().set(roomId, room);
+            return room;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to add user in Redis: " + e.getMessage(), e);
+        }
+    }
+
+    private void removeUser(Room room, String username) {
+        boolean userExists = room.getUsers().removeIf(user -> user.getUsername().equals(username));
+        if (!userExists) {
+            throw new UserNotFoundException("User " + username + " not found!");
+        }
     }
 
     @Transactional
-    public void removeUser(String roomId, String username) {
+    public String leaveUser(String roomId, String username) {
         Room room = getRoom(roomId);
-        room.removeUser(username);
-        if(username == room.getHostUsername() || room.getUsers().isEmpty()) {
+        removeUser(room, username);
+        if(username.equals(room.getHostUsername()) || room.getUsers().isEmpty()) {
             redisTemplate.delete(roomId);
         } else {
             redisTemplate.opsForValue().set(roomId, room);
         }
+        return username;
     }
 
     @Transactional

@@ -29,13 +29,6 @@ public class Room {
         users.add(user);
     }
 
-    public void removeUser(String username) {
-        boolean removed = users.removeIf(user -> user.getUsername().equals(username));
-        if (!removed) {
-            throw new UserNotFoundException("User " + username + " not found!");
-        }
-    }
-
     public String getRoomId() {
         return roomId;
     }

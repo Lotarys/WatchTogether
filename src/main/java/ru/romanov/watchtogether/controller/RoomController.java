@@ -2,6 +2,9 @@ package ru.romanov.watchtogether.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import ru.romanov.watchtogether.model.Room;
@@ -24,9 +27,15 @@ public class RoomController {
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.createRoom(username));
     }
 
+    @MessageMapping("/room/{roomId}/leave")
+    @SendTo("/topic/{roomId}/leave")
+    public String leave(@DestinationVariable String roomId, @RequestParam String username) {
+        return roomService.leaveUser(roomId, username);
+    }
+
     @PostMapping("/room/{roomId}/join")
     public ResponseEntity<?> joinRoom(@RequestParam String username, @PathVariable String roomId) {
-        Room room = roomService.join(username, roomId);
+        Room room = roomService.joinRoom(username, roomId);
         messagingTemplate.convertAndSend("/topic/" + roomId + "/join", new User(username));
         return ResponseEntity.status(HttpStatus.OK).body(room);
     }
