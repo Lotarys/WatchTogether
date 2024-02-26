@@ -39,4 +39,18 @@ public class RoomController {
         messagingTemplate.convertAndSend("/topic/" + roomId + "/join", new User(username));
         return ResponseEntity.status(HttpStatus.OK).body(room);
     }
+
+    @MessageMapping("/room/{roomId}/addVideo")
+    @SendTo("/topic/{roomId}/addVideo")
+    public String addVideo(@DestinationVariable String roomId, @RequestParam String url) {
+        roomService.addVideo(roomId, url);
+        return url;
+    }
+
+    @MessageMapping("/room/{roomId}/removeVideo")
+    @SendTo("/topic/{roomId}/removeVideo")
+    public String removeVideo(@DestinationVariable String roomId, @RequestParam String url) {
+        roomService.removeVideo(roomId, url);
+        return url;
+    }
 }

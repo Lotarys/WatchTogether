@@ -3,9 +3,7 @@ package ru.romanov.watchtogether.service;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.romanov.watchtogether.exception.RoomNotFoundException;
-import ru.romanov.watchtogether.exception.UserNotFoundException;
-import ru.romanov.watchtogether.exception.UsernameUniqueException;
+import ru.romanov.watchtogether.exception.*;
 import ru.romanov.watchtogether.model.Room;
 import ru.romanov.watchtogether.model.User;
 
@@ -29,7 +27,7 @@ public class RoomService {
             redisTemplate.opsForValue().set(roomId, room);
             return roomId;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create room in Redis: " + e.getMessage(), e);
+            throw new CreateRoomException("Failed to create room in Redis: " + e.getMessage(), e);
         }
     }
 
@@ -56,7 +54,7 @@ public class RoomService {
             redisTemplate.opsForValue().set(roomId, room);
             return room;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to add user in Redis: " + e.getMessage(), e);
+            throw new UserOperationException("Failed to add user in Redis: " + e.getMessage(), e);
         }
     }
 
@@ -69,20 +67,39 @@ public class RoomService {
 
     @Transactional
     public String leaveUser(String roomId, String username) {
-        Room room = getRoom(roomId);
-        removeUser(room, username);
-        if(username.equals(room.getHostUsername()) || room.getUsers().isEmpty()) {
-            redisTemplate.delete(roomId);
-        } else {
-            redisTemplate.opsForValue().set(roomId, room);
+        try {
+            Room room = getRoom(roomId);
+            removeUser(room, username);
+            if (username.equals(room.getHostUsername()) || room.getUsers().isEmpty()) {
+                redisTemplate.delete(roomId);
+            } else {
+                redisTemplate.opsForValue().set(roomId, room);
+            }
+            return username;
+        } catch (Exception e) {
+            throw new UserOperationException("Failed to delete a user: " + e.getMessage(), e);
         }
-        return username;
     }
 
     @Transactional
-    public void addVideoLink(String roomId, String videoLink) {
-        Room room = getRoom(roomId);
-        room.addVideoLink(videoLink);
-        redisTemplate.opsForValue().set(roomId, room);
+    public void addVideo(String roomId, String url) {
+        try {
+            Room room = getRoom(roomId);
+            room.getVideos().add(url);
+            redisTemplate.opsForValue().set(roomId, room);
+        } catch (Exception e) {
+            throw new PlaylistException("Failed add video: " + e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public void removeVideo(String roomId, String url) {
+        try {
+            Room room = getRoom(roomId);
+            room.getVideos().remove(url);
+            redisTemplate.opsForValue().set(roomId, room);
+        } catch (Exception e) {
+            throw new PlaylistException("Failed remove video: " + e.getMessage(), e);
+        }
     }
 }

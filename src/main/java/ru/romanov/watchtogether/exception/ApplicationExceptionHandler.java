@@ -7,16 +7,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
-
     @ExceptionHandler({
             RoomNotFoundException.class,
             UserNotFoundException.class,
-            UsernameUniqueException.class
+            UsernameUniqueException.class,
+            UserOperationException.class,
+            PlaylistException.class,
+            CreateRoomException.class
     })
-    public ResponseEntity<?> handleException(Exception e) {
-        HttpStatus status = HttpStatus.NOT_FOUND;
+    public ResponseEntity<?> handleExceptions(Exception e) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         if(e instanceof UsernameUniqueException) {
             status = HttpStatus.CONFLICT;
+        } else if(e instanceof RoomNotFoundException ||
+                e instanceof UserNotFoundException) {
+            status = HttpStatus.NOT_FOUND;
         }
         return ResponseEntity
                 .status(status)

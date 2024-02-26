@@ -12,9 +12,8 @@ public class Room {
 
     private String roomId;
     private List<User> users = new ArrayList<>();
-    private List<String> videos = new LinkedList<>();
+    private List<String> videos = new ArrayList<>();
     private String hostUsername;
-
 
     public Room() {
     }
@@ -47,10 +46,6 @@ public class Room {
 
     public void setVideos(List<String> videos) {
         this.videos = videos;
-    }
-
-    public void addVideoLink(String videoLink) {
-        videos.add(videoLink);
     }
 
     public List<User> getUsers() {
