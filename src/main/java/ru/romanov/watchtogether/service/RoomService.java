@@ -7,6 +7,7 @@ import ru.romanov.watchtogether.exception.*;
 import ru.romanov.watchtogether.model.Room;
 import ru.romanov.watchtogether.model.User;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -100,6 +101,16 @@ public class RoomService {
             redisTemplate.opsForValue().set(roomId, room);
         } catch (Exception e) {
             throw new PlaylistException("Failed remove video: " + e.getMessage(), e);
+        }
+    }
+
+    public void updateVideo(String roomId, List<String> urls) {
+        try {
+            Room room = getRoom(roomId);
+            room.setVideos(urls);
+            redisTemplate.opsForValue().set(roomId, room);
+        } catch (Exception e) {
+            throw new PlaylistException("Failed update playlist: " + e.getMessage(), e);
         }
     }
 }
