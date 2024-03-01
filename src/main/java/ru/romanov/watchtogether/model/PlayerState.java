@@ -2,22 +2,23 @@ package ru.romanov.watchtogether.model;
 
 public class PlayerState {
 
-    private String currentVideo;
+    private Video currentVideo;
     private long currentTime;
 
     public PlayerState() {
     }
 
-    public PlayerState(String currentVideo, long currentTime) {
+
+    public PlayerState(Video currentVideo, long currentTime) {
         this.currentVideo = currentVideo;
         this.currentTime = currentTime;
     }
 
-    public String getCurrentVideo() {
+    public Video getCurrentVideo() {
         return currentVideo;
     }
 
-    public void setCurrentVideo(String currentVideo) {
+    public void setCurrentVideo(Video currentVideo) {
         this.currentVideo = currentVideo;
     }
 

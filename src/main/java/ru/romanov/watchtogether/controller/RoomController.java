@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import ru.romanov.watchtogether.model.Room;
 import ru.romanov.watchtogether.model.User;
+import ru.romanov.watchtogether.model.Video;
 import ru.romanov.watchtogether.service.RoomService;
 import java.util.List;
 
@@ -43,22 +44,22 @@ public class RoomController {
 
     @MessageMapping("/room/{roomId}/video/add")
     @SendTo("/topic/{roomId}/video/add")
-    public String addVideo(@DestinationVariable String roomId, @RequestParam String url) {
-        roomService.addVideo(roomId, url);
-        return url;
+    public Video addVideo(@DestinationVariable String roomId, @RequestBody Video video) {
+        roomService.addVideo(roomId, video);
+        return video;
     }
 
     @MessageMapping("/room/{roomId}/video/remove")
     @SendTo("/topic/{roomId}/video/remove")
-    public String removeVideo(@DestinationVariable String roomId, @RequestParam String url) {
-        roomService.removeVideo(roomId, url);
-        return url;
+    public Video removeVideo(@DestinationVariable String roomId, @RequestBody Video video) {
+        roomService.removeVideo(roomId, video);
+        return video;
     }
 
     @MessageMapping("/room/{roomId}/video/update")
     @SendTo("/topic/{roomId}/video/update")
-    public List<String> updateVideo(@DestinationVariable String roomId, @RequestBody List<String> urls) {
-        roomService.updateVideo(roomId, urls);
-        return urls;
+    public List<Video> updateVideo(@DestinationVariable String roomId, @RequestBody List<Video> videos) {
+        roomService.updateVideo(roomId, videos);
+        return videos;
     }
 }

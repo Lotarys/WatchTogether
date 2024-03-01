@@ -12,7 +12,7 @@ public class Room {
 
     private String roomId;
     private List<User> users = new ArrayList<>();
-    private List<String> videos = new ArrayList<>();
+    private List<Video> videos = new ArrayList<>();
     private String hostUsername;
 
     public Room() {
@@ -40,11 +40,11 @@ public class Room {
         this.users = users;
     }
 
-    public List<String> getVideos() {
+    public List<Video> getVideos() {
         return videos;
     }
 
-    public void setVideos(List<String> videos) {
+    public void setVideos(List<Video> videos) {
         this.videos = videos;
     }
 

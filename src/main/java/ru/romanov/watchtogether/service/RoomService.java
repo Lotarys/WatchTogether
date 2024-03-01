@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.romanov.watchtogether.exception.*;
 import ru.romanov.watchtogether.model.Room;
 import ru.romanov.watchtogether.model.User;
+import ru.romanov.watchtogether.model.Video;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +37,6 @@ public class RoomService {
     public Room joinRoom(String username, String roomId) {
         return addUser(username, roomId);
     }
-
     public Room getRoom(String roomId) {
         Room room = redisTemplate.opsForValue().get(roomId);
         if (room == null) {
@@ -83,10 +83,10 @@ public class RoomService {
     }
 
     @Transactional
-    public void addVideo(String roomId, String url) {
+    public void addVideo(String roomId, Video video) {
         try {
             Room room = getRoom(roomId);
-            room.getVideos().add(url);
+            room.getVideos().add(video);
             redisTemplate.opsForValue().set(roomId, room);
         } catch (Exception e) {
             throw new PlaylistException("Failed add video: " + e.getMessage(), e);
@@ -94,20 +94,20 @@ public class RoomService {
     }
 
     @Transactional
-    public void removeVideo(String roomId, String url) {
+    public void removeVideo(String roomId, Video video) {
         try {
             Room room = getRoom(roomId);
-            room.getVideos().remove(url);
+            room.getVideos().remove(video);
             redisTemplate.opsForValue().set(roomId, room);
         } catch (Exception e) {
             throw new PlaylistException("Failed remove video: " + e.getMessage(), e);
         }
     }
 
-    public void updateVideo(String roomId, List<String> urls) {
+    public void updateVideo(String roomId, List<Video> videos) {
         try {
             Room room = getRoom(roomId);
-            room.setVideos(urls);
+            room.setVideos(videos);
             redisTemplate.opsForValue().set(roomId, room);
         } catch (Exception e) {
             throw new PlaylistException("Failed update playlist: " + e.getMessage(), e);
