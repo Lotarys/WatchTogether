@@ -7,11 +7,12 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import ru.romanov.watchtogether.model.Room;
-import ru.romanov.watchtogether.model.User;
-import ru.romanov.watchtogether.model.Video;
+import ru.romanov.watchtogether.model.*;
 import ru.romanov.watchtogether.service.RoomService;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 
 @RestController
 public class RoomController {
@@ -30,34 +31,42 @@ public class RoomController {
     }
 
     @MessageMapping("/room/{roomId}/leave")
-    @SendTo("/topic/{roomId}/leave")
+    @SendTo("/topic/room/{roomId}/leave")
     public String leave(@DestinationVariable String roomId, @RequestParam String username) {
         return roomService.leaveUser(roomId, username);
     }
 
     @PostMapping("/room/{roomId}/join")
-    public ResponseEntity<?> joinRoom(@RequestParam String username, @PathVariable String roomId) {
+    public ResponseEntity<?> joinRoom(@RequestParam String username, @PathVariable String roomId) throws ExecutionException, InterruptedException {
         Room room = roomService.joinRoom(username, roomId);
-        messagingTemplate.convertAndSend("/topic/" + roomId + "/join", new User(username));
-        return ResponseEntity.status(HttpStatus.OK).body(room);
+        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/synchronization", roomId);
+        CompletableFuture<PlayerState> future = roomService.getFuture(roomId);
+        PlayerState playerState = future.get();
+        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/join", new User(username));
+        return ResponseEntity.status(HttpStatus.OK).body(new RoomWithPlayerState(room, playerState));
     }
 
-    @MessageMapping("/room/{roomId}/video/add")
-    @SendTo("/topic/{roomId}/video/add")
+    @MessageMapping("/{roomId}/synchronizationResponse")
+    public void handleSynchronizationResponse(@DestinationVariable String roomId, PlayerState playerState) {
+        roomService.completeFuture(roomId, playerState);
+    }
+
+    @MessageMapping("/room/{roomId}/playlist/add")
+    @SendTo("/topic/room/{roomId}/playlist/add")
     public Video addVideo(@DestinationVariable String roomId, @RequestBody Video video) {
         roomService.addVideo(roomId, video);
         return video;
     }
 
-    @MessageMapping("/room/{roomId}/video/remove")
-    @SendTo("/topic/{roomId}/video/remove")
+    @MessageMapping("/room/{roomId}/playlist/remove")
+    @SendTo("/topic/room/{roomId}/playlist/remove")
     public Video removeVideo(@DestinationVariable String roomId, @RequestBody Video video) {
         roomService.removeVideo(roomId, video);
         return video;
     }
 
-    @MessageMapping("/room/{roomId}/video/update")
-    @SendTo("/topic/{roomId}/video/update")
+    @MessageMapping("/room/{roomId}/playlist/update")
+    @SendTo("/topic/room/{roomId}/playlist/update")
     public List<Video> updateVideo(@DestinationVariable String roomId, @RequestBody List<Video> videos) {
         roomService.updateVideo(roomId, videos);
         return videos;

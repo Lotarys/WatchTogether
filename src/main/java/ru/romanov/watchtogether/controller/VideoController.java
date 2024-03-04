@@ -10,13 +10,13 @@ import ru.romanov.watchtogether.model.PlayerState;
 public class VideoController {
 
     @MessageMapping("/video/{roomId}/pause")
-    @SendTo("/topic/{roomId}/pause")
+    @SendTo("/topic/video/{roomId}/pause")
     public PlayerState pause(@Payload PlayerState playerState) {
         return playerState;
     }
 
     @MessageMapping("/video/{roomId}/resume")
-    @SendTo("/topic/{roomId}/resume")
+    @SendTo("/topic/video/{roomId}/resume")
     public PlayerState resume(@Payload PlayerState playerState) {
         return playerState;
     }

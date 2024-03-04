@@ -4,18 +4,22 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.romanov.watchtogether.exception.*;
+import ru.romanov.watchtogether.model.PlayerState;
 import ru.romanov.watchtogether.model.Room;
 import ru.romanov.watchtogether.model.User;
 import ru.romanov.watchtogether.model.Video;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RoomService {
 
     private final RedisTemplate<String, Room> redisTemplate;
-
+    private final Map<String, CompletableFuture<PlayerState>> futures = new ConcurrentHashMap<>();
     public RoomService(RedisTemplate<String, Room> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
@@ -35,8 +39,23 @@ public class RoomService {
 
     @Transactional
     public Room joinRoom(String username, String roomId) {
-        return addUser(username, roomId);
+        Room room = addUser(username, roomId);
+        CompletableFuture<PlayerState> future = new CompletableFuture<>();
+        futures.put(roomId, future);
+        return room;
     }
+
+    public CompletableFuture<PlayerState> getFuture(String roomId) {
+        return futures.get(roomId);
+    }
+
+    public void completeFuture(String roomId, PlayerState playerState) {
+        CompletableFuture<PlayerState> future = futures.remove(roomId);
+        if (future != null) {
+            future.complete(playerState);
+        }
+    }
+
     public Room getRoom(String roomId) {
         Room room = redisTemplate.opsForValue().get(roomId);
         if (room == null) {

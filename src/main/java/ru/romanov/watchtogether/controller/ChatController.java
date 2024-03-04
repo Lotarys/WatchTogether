@@ -9,8 +9,8 @@ import ru.romanov.watchtogether.model.ChatMessage;
 @Controller
 public class ChatController {
 
-    @MessageMapping("/video/{roomId}/chat")
-    @SendTo("/topic/{roomId}/chat")
+    @MessageMapping("/chat/{roomId}")
+    @SendTo("/topic/chat/{roomId}")
     public ChatMessage chat(@Payload ChatMessage chatMessage) {
         return chatMessage;
     }
