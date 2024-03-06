@@ -1,5 +1,7 @@
 package ru.romanov.watchtogether.model;
 
+import java.util.Objects;
+
 public class Video {
 
     private String url;
@@ -37,5 +39,18 @@ public class Video {
 
     public void setImg(String img) {
         this.img = img;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Video video = (Video) o;
+        return Objects.equals(url, video.url) && Objects.equals(title, video.title) && Objects.equals(img, video.img);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(url, title, img);
     }
 }
