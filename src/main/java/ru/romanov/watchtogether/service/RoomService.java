@@ -90,7 +90,7 @@ public class RoomService {
         try {
             Room room = getRoom(roomId);
             removeUser(room, username);
-            if (username.equals(room.getHostUsername()) || room.getUsers().isEmpty()) {
+            if (room.getUsers().isEmpty()) {
                 redisTemplate.delete(roomId);
             } else {
                 redisTemplate.opsForValue().set(roomId, room);
