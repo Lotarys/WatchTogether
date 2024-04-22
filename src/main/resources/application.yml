@@ -1,5 +1,8 @@
 spring:
   data:
     redis:
+      host: red-coiff0n79t8c738ftbcg
       port: 6379
-      host: redis
+      password: AchSZJRMHffxJyDodtPAIQld3OkGjYog
+      ssl:
+        enabled: false
